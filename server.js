@@ -26,6 +26,8 @@ app.use(session({
 
 // Input arguments sent from command line
 // Can change default so don't have to enter on command line every time
+// hostname : 'ec2-3-106-127-28.ap-southeast-2.compute.amazonaws.com',
+//hostname : 'maximo-demo75.mro.com',
 let args = minimist(process.argv.slice(2), {
 	string: [ 'hostname', 'port', 'user', 'password', 'authtype' ],
 	integer: [ 'islean' ],
@@ -43,7 +45,7 @@ let args = minimist(process.argv.slice(2), {
 		    user : 'maxadmin',
 		    password : 'maxadmin',
         islean : 1,
-        authtype : 'basic'
+        authtype : 'maxauth'
   }
 });
 
@@ -94,6 +96,33 @@ router.get('/authenticate', function(req, res)
                   console.log('****** Error Code = '+error);
             });
 });
+
+
+
+
+//Read specific WO by WONUM ----------------------------------------------------
+router.get('/read_a_WO/:woNum', function(req, res)
+{
+      var theWoNum = req.params.woNum;
+      var maximo = new Maximo(options);
+      maximo.resourceobject("MXWODETAIL")
+          .select(["wonum","description","location","status"])
+          .where("wonum").equal(theWoNum)
+          .orderby('wonum','desc')
+          .fetch()
+          .then(function(resourceset)
+              {
+				jsondata = resourceset.thisResourceSet();
+                res.json(jsondata);
+				uri = jsondata[0]["href"];
+              })
+          .fail(function (error)
+          {
+                console.log('****** Error Code = '+error);
+          });
+});
+// -----------------------------------------------------------------------------
+
 // -----------------------------------------------------------------------------
 
 //Read specific WO by WONUM ----------------------------------------------------
@@ -102,7 +131,7 @@ router.get('/read_1_WO', function(req, res)
       var maximo = new Maximo(options);
       maximo.resourceobject("MXWODETAIL")
           .select(["wonum","description","location","status"])
-          .where("wonum").equal("A123A")
+          .where("wonum").equal("1018")
           .orderby('wonum','desc')
           .fetch()
           .then(function(resourceset)
